@@ -1,31 +1,74 @@
-import React, { createContext, useEffect, useState } from 'react'
-export const recipecontext=createContext(null);
+import React, { createContext, useEffect, useState } from "react";
 
-const RecipeContect = (props) => {
-    const [data, setdata]=useState([]);
-    // useEffect(() => {
-    //   setdata(JSON.parse(localStorage.getItem("recipes")) || [] );},[]);
-          useEffect(() => {
-      try {
-        const recipes = JSON.parse(localStorage.getItem("recipes"));
-        setdata(Array.isArray(recipes) ? recipes : []);
-      } catch (error) {
-        console.error("Error parsing recipes:", error);
-        setdata([]);
+export const recipecontext = createContext(null);
+
+// The beautiful sample data for your Vercel deployment
+const sampleRecipes = [
+  {
+    id: "sample-1",
+    title: "Midnight Truffle Pasta",
+    image: "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&q=80&w=1000",
+    description: "A rich, velvety pasta dish crafted for late-night cravings. Infused with black truffle oil and topped with fresh parmesan.",
+    category: "Dinner",
+    chef: "Uday",
+    ingredients: [
+      { name: "Fettuccine", quantity: "200", unit: "g" },
+      { name: "Heavy Cream", quantity: "1", unit: "cup" },
+      { name: "Truffle Oil", quantity: "2", unit: "tbsp" },
+      { name: "Parmesan Cheese", quantity: "50", unit: "g" }
+    ],
+    instruction: "Boil pasta in salted water until al dente. In a separate pan, gently heat the heavy cream and stir in the parmesan until smooth. Toss the pasta into the sauce, drizzle generously with truffle oil, and garnish with black pepper. Serve immediately."
+  },
+  {
+    id: "sample-2",
+    title: "Neon Berry Smoothie Bowl",
+    image: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&q=80&w=1000",
+    description: "An aesthetically pleasing, vibrant smoothie bowl packed with antioxidants, dragon fruit, and mixed wild berries.",
+    category: "Breakfast",
+    chef: "Aria",
+    ingredients: [
+      { name: "Frozen Dragon Fruit", quantity: "1", unit: "cup" },
+      { name: "Mixed Berries", quantity: "1", unit: "cup" },
+      { name: "Almond Milk", quantity: "0.5", unit: "cup" },
+      { name: "Chia Seeds", quantity: "1", unit: "tbsp" }
+    ],
+    instruction: "Blend the frozen dragon fruit, mixed berries, and almond milk until completely smooth and thick. Pour into a chilled bowl. Arrange chia seeds, fresh fruit, and coconut flakes in a geometric pattern on top."
+  }
+];
+
+const RecipeContext = (props) => {
+  // 1. Load instantly before first render (Fixes the flicker bug)
+  const [data, setdata] = useState(() => {
+    try {
+      const savedData = localStorage.getItem("recipes");
+      const parsedData = savedData ? JSON.parse(savedData) : [];
+      
+      // 2. Inject samples if they have no data (Great for Vercel visitors)
+      if (Array.isArray(parsedData) && parsedData.length > 0) {
+        return parsedData;
+      } else {
+        localStorage.setItem("recipes", JSON.stringify(sampleRecipes));
+        return sampleRecipes;
       }
-    }, []);
-  
+    } catch (error) {
+      console.error("Failed to load recipes:", error);
+      return sampleRecipes; 
+    }
+  });
 
-    // console.log(data);
+  // 3. Auto-save any changes you make to the data state
+  useEffect(() => {
+    localStorage.setItem("recipes", JSON.stringify(data));
+  }, [data]);
+
   return (
-    <recipecontext.Provider value={{data, setdata}}>
-        {props.children}
-        
+    <recipecontext.Provider value={{ data, setdata }}>
+      {props.children}
     </recipecontext.Provider>
-  )
-}
+  );
+};
 
-export default RecipeContect
+export default RecipeContext;
 // {
 //   "id": "Z0dqgGjF6Basdfdasd9l5zXbta0l9",
 //   "title": "Healthy Turmeric Smoothie",
